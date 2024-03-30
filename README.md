@@ -7,10 +7,11 @@ venv my_settings.py pycache
 python -m venv venv
 
 가상 환경 활성화 (Windows 환경, cmd나 git bash에서)
-.\venv\Scripts\activate 정상적으로 활성화 시 가상환경 진입: (venv)
+.\venv\Scripts\activate 
+정상적으로 활성화 시 가상환경 진입: (venv)
 
 의존성 설치 (venv)
-pip install -r requirements.txt
+pip install -r qna-backend/requirements.txt
 
 Django 실행 (manage.py 위치에서)
 py manage.py runserver
@@ -26,3 +27,11 @@ python manage.py migrate
 종료 시 가상 환경 비활성화
 deactivate
 
+
+===================
+db이름 : team4qna
+collection 이름 : qna
+
+
+
+docker run -e MONGO_IP='localhost' -e MONGO_PORT='27017' 이미지 이름
