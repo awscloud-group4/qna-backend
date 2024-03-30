@@ -139,3 +139,101 @@ class QuestionsRetrieveAPIView(APIView):
             return Response(empty_response, status=status.HTTP_200_OK)
         
 
+# 질문에 투표를 증가시키는 view 함수
+class QuestionVoteAPIView(APIView):
+    def post(self, request):
+        # 요청 데이터에서 필요한 정보 추출
+        date_str = request.data.get("date")
+        question_id = request.data.get("question_id")
+
+        # 필수 필드 검증
+        if not date_str or not question_id:
+            return Response({"error": "날짜와 질문 ID는 필수 항목입니다."}, status=status.HTTP_400_BAD_REQUEST)
+
+        # MongoDB 클라이언트 설정
+        questions_collection = get_mongo_collection()
+
+        # 특정 날짜와 질문 ID를 가진 문서를 찾습니다.
+        document = questions_collection.find_one({"date": date_str, "questions.question_id": question_id})
+
+        # 문서가 존재하는지 확인합니다.
+        if document:
+            # 문서 내에서 질문을 찾습니다.
+            questions = document.get("questions")
+            target_question = None
+            for q in questions:
+                if q.get("question_id") == question_id:
+                    target_question = q
+                    break
+
+            # 찾은 질문이 있으면 upvotes를 증가시킵니다.
+            if target_question:
+                # 현재 upvotes 수를 가져와 1을 증가시킵니다.
+                current_upvotes = target_question.get("upvotes", 0)
+                target_question["upvotes"] = current_upvotes + 1
+
+                # MongoDB에 업데이트합니다.
+                questions_collection.update_one(
+                    {"date": date_str, "questions.question_id": question_id},
+                    {"$set": {"questions.$": target_question}}
+                )
+
+                return Response({"success": "투표가 성공적으로 증가했습니다."}, status=status.HTTP_200_OK)
+            else:
+                return Response({"error": "해당 질문을 찾을 수 없습니다."}, status=status.HTTP_404_NOT_FOUND)
+        else:
+            return Response({"error": "해당 날짜의 문서를 찾을 수 없습니다."}, status=status.HTTP_404_NOT_FOUND)
+        
+class AnswerVoteAPIView(APIView):
+    def post(self, request):
+        # 요청 데이터에서 필요한 정보 추출
+        date_str = request.data.get("date")
+        question_id = request.data.get("question_id")
+        answer_id = request.data.get("answer_id")
+
+        # 필수 필드 검증
+        if not date_str or not question_id or not answer_id:
+            return Response({"error": "날짜, 질문 ID, 답변 ID는 필수 항목입니다."}, status=status.HTTP_400_BAD_REQUEST)
+
+        # MongoDB 클라이언트 설정
+        questions_collection = get_mongo_collection()
+
+        # 특정 날짜, 질문 ID 및 답변 ID를 가진 문서를 찾습니다.
+        document = questions_collection.find_one({"date": date_str, "questions.question_id": question_id})
+
+        # 문서가 존재하는지 확인합니다.
+        if document:
+            # 문서 내에서 질문과 답변을 찾습니다.
+            questions = document.get("questions")
+            target_question = None
+            target_answer = None
+
+            for q in questions:
+                if q.get("question_id") == question_id:
+                    target_question = q
+                    # 답변을 찾습니다.
+                    answers = q.get("answers")
+                    for ans in answers:
+                        if ans.get("answer_id") == answer_id:
+                            target_answer = ans
+                            break
+                    break
+
+            # 찾은 질문과 답변이 있으면 upvotes를 증가시킵니다.
+            if target_question and target_answer:
+                # 현재 upvotes 수를 가져와 1을 증가시킵니다.
+                current_upvotes = target_answer.get("upvotes", 0)
+                target_answer["upvotes"] = current_upvotes + 1
+
+                # MongoDB에 업데이트합니다.
+                questions_collection.update_one(
+                    {"date": date_str, "questions.question_id": question_id, "questions.answers.answer_id": answer_id},
+                    {"$set": {"questions.$[].answers.$[ans].upvotes": target_answer["upvotes"]}},
+                    array_filters=[{"ans.answer_id": answer_id}]
+                )
+
+                return Response({"success": "투표가 성공적으로 증가했습니다."}, status=status.HTTP_200_OK)
+            else:
+                return Response({"error": "해당 질문 또는 답변을 찾을 수 없습니다."}, status=status.HTTP_404_NOT_FOUND)
+        else:
+            return Response({"error": "해당 날짜의 문서를 찾을 수 없습니다."}, status=status.HTTP_404_NOT_FOUND)
