@@ -29,9 +29,11 @@ deactivate
 
 
 ===================
-db이름 : team4qna
-collection 이름 : qna
-
+환경 변수 설정
+MONGO_IP              : localhost
+MONGO_PORT            : 27017
+MONGO_DB_NAME         : team4qna
+MONGO_COLLECTION_NAME : qna
 
 
 docker run -e MONGO_IP='localhost' -e MONGO_PORT='27017' 이미지 이름

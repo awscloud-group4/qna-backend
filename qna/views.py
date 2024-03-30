@@ -13,6 +13,9 @@ def get_mongo_collection(db_name='team4qna', collection_name='qna'):
     # 환경변수에서 MongoDB 서버의 IP 주소와 포트 번호 읽기
     mongo_ip = os.getenv('MONGO_IP', 'localhost')  # 기본값은 'localhost'
     mongo_port = os.getenv('MONGO_PORT', '27017')  # 기본값은 '27017'
+    db_name = os.getenv('MONGO_DB_NAME', 'team4qna')  # 기본값은 'team4qna'
+    collection_name = os.getenv('MONGO_COLLECTION_NAME', 'qna')  # 기본값은 'qna'
+    
     
     # 포트 번호는 정수로 변환
     mongo_port = int(mongo_port)
