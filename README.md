@@ -14,7 +14,7 @@ python -m venv venv
 pip install -r qna-backend/requirements.txt
 
 Django 실행 (manage.py 위치에서)
-py manage.py runserver
+py manage.py runserver 0.0.0.0:8000
 
 가상 환경에 필요한 패키지만 공유 (venv)
 항상 가상환경에 필요한 패키지와 버전을 아래 명령어로 최신화 및 공유 
