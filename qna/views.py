@@ -115,8 +115,8 @@ class AnswerCreateAPIView(APIView):
 ##특정 날짜 데이터 가져오기
 class QuestionsRetrieveAPIView(APIView):
     def get(self, request):
-        # 요청 데이터에서 날짜 추출
-        date_str = request.data.get("date")
+        # 요청 쿼리 파라미터에서 날짜 추출
+        date_str = request.query_params.get("date")
 
         # 날짜 필드 검증
         if not date_str:
